@@ -1,7 +1,3 @@
-@import "./reset.css";
+@import "./generic/all.css";
 @import "./themes/all.css";
-
-html, body {
-  width: 100%;
-  height: 100%;
-}
+@import "./elements/all.css";
