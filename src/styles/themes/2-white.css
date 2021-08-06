@@ -1,0 +1,22 @@
+body.-theme2 {
+  /* Backgrounds */
+  --main-background: hsl(0, 0%, 90%);
+  --keypad-background: hsl(0, 5%, 81%);
+  --screen-background: hsl(0, 0%, 93%);
+
+  /* Keys */
+  --action-background: hsl(185, 42%, 37%);
+  --action-shadow: hsl(185, 58%, 25%);
+
+  --equal-background: hsl(25, 98%, 40%);
+  --equal-shadow: hsl(25, 99%, 27%);
+
+  --key-background: hsl(45, 7%, 89%);
+  --key-shadow: hsl(35, 11%, 61%);
+
+  /* Text */
+  --main-text-color: hsl(60, 10%, 19%);
+  --key-text-color: hsl(60, 10%, 19%);
+  --action-text-color: hsl(0, 0, 100%);
+  --equal-text-color: hsl(0, 0, 100%);
+}
