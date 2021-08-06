@@ -17,6 +17,6 @@ body.-theme3 {
   /* Text */
   --main-text-color: hsl(52, 100%, 62%);
   --key-text-color: hsl(52, 100%, 62%);
-  --action-text-color: hsl(0, 0, 100%);
+  --action-text-color: hsl(0, 0%, 100%);
   --equal-text-color: hsl(198, 20%, 13%);
 }

@@ -15,8 +15,8 @@ body, body.-theme1 {
   --key-shadow: hsl(28, 16%, 65%);
 
   /* Text */
-  --main-text-color: hsl(0, 0, 100%);
+  --main-text-color: hsl(0, 0%, 100%);
   --key-text-color: hsl(221, 14%, 31%);
-  --action-text-color: hsl(0, 0, 100%);
-  --equal-text-color: hsl(0, 0, 100%);
+  --action-text-color: hsl(0, 0%, 100%);
+  --equal-text-color: hsl(0, 0%, 100%);
 }
