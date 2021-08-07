@@ -1,0 +1,73 @@
+.switch {
+  height: 100%;
+  grid-row: 1 / 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.switch__index {
+  font-size: min(.8rem, 4vw);
+  font-family: 'Spartan', sans-serif;
+  color: var(--main-text-color);
+  
+  width: min(70px, 20vw);
+  display: flex;
+  justify-content: space-around;
+}
+
+.switch__field {
+  position: relative;
+  display: block;
+  width: min(70px, 20vw);
+  height: min(25px, 8vw);
+}
+
+.switch__button {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch__slider {
+  background-color: var(--keypad-background);
+  width: 100%;
+  height: 100%;
+  border-radius: 34px;
+  cursor: pointer;
+
+  padding: 4px 5px;
+
+  display: flex;
+  align-items: center;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.switch__slider::after {
+  content: "";
+  display: block;
+  --size: min(17px, 5vw);
+  width: var(--size);
+  height: var(--size);
+  background-color: var(--equal-background);
+  border-radius: 50%;
+
+  position: relative;
+  left: 0;
+  
+  -webkit-transition: left .4s;
+  transition: left .4s;
+}
+
+.switch__slider[data-index="1"]::after {
+  left: 0;
+}
+.switch__slider[data-index="2"]::after {
+  left: calc(50% - (var(--size) / 2));
+}
+.switch__slider[data-index="3"]::after {
+  left: calc(100% - var(--size));
+}
