@@ -1,8 +1,8 @@
 .calculator {
   max-width: 550px;
   width: 85%;
-  margin: 0 auto;
-  padding-top: 2rem;
+  margin: 1.5rem auto auto auto;
+  padding-bottom: .8rem;
 }
 
 .calculator__screen {
