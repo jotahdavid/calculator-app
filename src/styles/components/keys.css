@@ -1,0 +1,29 @@
+.keys {
+  width: 100%;
+  height: min(4rem, 16vw);
+  background-color: var(--key-background);
+  --box-shadow-distance: 4px;
+  box-shadow: 0 var(--box-shadow-distance) 0 var(--key-shadow);
+  border-radius: .5rem;
+
+  font-family: 'Spartan', sans-serif;
+  font-size: min(2rem, 8vw);
+  color: var(--key-text-color);
+
+  cursor: pointer;
+}
+
+.keys.--action {
+  background-color: var(--action-background);
+  box-shadow:  0 var(--box-shadow-distance) 0 var(--action-shadow);
+
+  font-size: min(1.3rem, 5vw);
+  text-transform: uppercase;
+  color: var(--action-text-color);
+}
+
+.keys.--equal {
+  background-color: var(--equal-background);
+  box-shadow:  0 var(--box-shadow-distance) 0 var(--equal-shadow);
+  color: var(--equal-text-color);
+}

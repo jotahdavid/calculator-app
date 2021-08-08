@@ -3,6 +3,11 @@
   width: 85%;
   margin: 1.5rem auto auto auto;
   padding-bottom: .8rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.2rem;
 }
 
 .calculator__screen {
