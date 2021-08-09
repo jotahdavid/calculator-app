@@ -27,3 +27,17 @@
   box-shadow:  0 var(--box-shadow-distance) 0 var(--equal-shadow);
   color: var(--equal-text-color);
 }
+
+.keys:active {
+  background-color: var(--key-shadow);
+  transform: translateY(var(--box-shadow-distance));
+  box-shadow: none;
+}
+
+.keys.--action:active {
+  background-color: var(--action-shadow);
+}
+
+.keys.--equal:active {
+  background-color: var(--equal-shadow);
+}
