@@ -17,6 +17,8 @@ function handleKeyClick({ currentTarget: key }) {
       break;
     case "action":
       if(key.value === "equal") calculateExpression();
+      if(key.value === "delete") deleteLastDigit();
+      if(key.value === "reset") clearAllExpression();
       break;
     default:
       return;
@@ -65,6 +67,11 @@ function storageDigit({ value: digit }) {
 }
 
 function displayExpression() {
+  if(expression.length === 0) {
+    $display.textContent = "|";
+    return;
+  }
+
   $display.textContent = expression.map(item => item.value).join("");
 }
 
@@ -95,7 +102,8 @@ const operations = {
 };
 
 function calculateExpression() {
-  console.log([...expression]);
+  if(expression.length === 0) return;
+
   const indexsOfMultAndDivision = getIndexsOfMultAndDivision();
 
   if(indexsOfMultAndDivision) {
@@ -105,8 +113,6 @@ function calculateExpression() {
 
   const sumAndSubtractionResults = calculateSumAndSubtraction();
   expression = sumAndSubtractionResults;
-
-  console.log(expression);
 }
 
 function getIndexsOfMultAndDivision() {
@@ -219,4 +225,23 @@ function calculateSumAndSubtraction() {
       type: "number"
     }
   ];
+}
+
+function deleteLastDigit() {
+  const lastIndex = getLastIndexOfArray(expression);
+
+  if(expression[lastIndex].type === "operator") {
+    expression.pop();
+    return;
+  }
+
+  expression[lastIndex].value = expression[lastIndex].value.slice(0, -1);
+
+  if(expression[lastIndex].value.length === 0) {
+    expression.pop();
+  }
+}
+
+function clearAllExpression() {
+  expression = [];
 }
