@@ -61,6 +61,8 @@ function storageDigit({ value: digit }) {
     
     if(digit === "." && expression[lastIndex].value.includes(digit)) return;
 
+    if(digit === "0" && expression[lastIndex].value === "0") return;
+
     expression[lastIndex].value += digit;
     return;
   }
