@@ -25,6 +25,8 @@ function handleKeyClick({ currentTarget: key }) {
   }
 
   displayExpression();
+
+  if($display.scrollLeftMax > $display.scrollLeft) scrollDisplayToRight();
 }
 
 function getKeyType(key) {
@@ -77,6 +79,10 @@ function displayExpression() {
   }
 
   $display.textContent = expression.map(item => item.value).join("");
+}
+
+function scrollDisplayToRight() {
+  $display.scrollLeft = $display.scrollLeftMax;
 }
 
 function storageOperator({ value: operator }) {
