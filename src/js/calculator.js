@@ -34,6 +34,8 @@ function getKeyType(key) {
 let expression = [];
 
 function storageDigit({ value: digit }) {
+  if(expression[0]?.type === "error") clearAllExpression();
+
   if(expression.length === 0) {
     if(digit === ".") {
       digit = "0.";
@@ -74,10 +76,17 @@ function displayExpression() {
     return;
   }
 
+  if(expression[0]?.type === "error") {
+    $display.textContent = "Can't divide by 0";
+    return;
+  }
+
   $display.textContent = expression.map(item => item.value).join("");
 }
 
 function storageOperator({ value: operator }) {
+  if(expression[0]?.type === "error") clearAllExpression();
+
   if(expression.length === 0) return;
 
   const lastIndex = getLastIndexOfArray(expression);
@@ -134,7 +143,7 @@ function calculateMultAndDivision(indexs) {
 
   for(let i = 0; i < indexs.length; i++) {
     let previousNumber = expression[indexs[i]-1]?.value;
-    let nextNumber = expression[indexs[i]+1]?.value;
+    let nextNumber = expression[indexs[i]+1]?.value || 1;
 
     if(indexs[i-1] === indexs[i] - 2) {
       previousNumber = results[i-1].result;
@@ -143,7 +152,7 @@ function calculateMultAndDivision(indexs) {
     if(expression[indexs[i]].value === "x") {
       const result = operations.multiply(
         Number(previousNumber),
-        Number(nextNumber) || 1
+        Number(nextNumber)
       );
 
       results.push(
@@ -159,7 +168,7 @@ function calculateMultAndDivision(indexs) {
     } else if(expression[indexs[i]].value === "/") {
       const result = operations.divide(
         Number(previousNumber),
-        Number(nextNumber) || 1
+        Number(nextNumber)
       );
 
       results.push(
@@ -169,8 +178,7 @@ function calculateMultAndDivision(indexs) {
             indexs[i],
             indexs[i]+1
           ],
-          result:
-          String(result)
+          result: String(result)
         }
       );
     }
@@ -220,6 +228,15 @@ function calculateSumAndSubtraction() {
 
     return accumulator + Number(currentValue.value);
   }, 0);
+
+  if(result === Infinity || isNaN(result)) {
+    return [
+      {
+        value: String(result),
+        type: "error"
+      }
+    ];
+  }
 
   return [
     {
