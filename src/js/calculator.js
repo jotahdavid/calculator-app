@@ -71,11 +71,6 @@ function storageDigit({ value: digit }) {
 }
 
 function displayExpression() {
-  if(expression.length === 0) {
-    $display.textContent = "|";
-    return;
-  }
-
   if(expression[0]?.type === "error") {
     $display.textContent = "Can't divide by 0";
     return;
