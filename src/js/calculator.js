@@ -252,6 +252,11 @@ function deleteLastDigit() {
 
   if(expression.length === 0) return;
 
+  if(expression[0].type === "error") {
+    clearAllExpression();
+    return;
+  }
+
   if(expression[lastIndex].type === "operator") {
     expression.pop();
     return;
