@@ -249,6 +249,8 @@ function calculateSumAndSubtraction() {
 function deleteLastDigit() {
   const lastIndex = getLastIndexOfArray(expression);
 
+  if(expression.length === 0) return;
+
   if(expression[lastIndex].type === "operator") {
     expression.pop();
     return;
