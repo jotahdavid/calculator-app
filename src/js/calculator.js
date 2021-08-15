@@ -4,76 +4,71 @@ export function addKeysEvent() {
 }
 
 const $display = document.querySelector(".calculator__result");
+let expression = [];
 
 function handleKeyClick({ currentTarget: key }) {
-  const keyType = getKeyType(key);
+  const type = getKeyType(key);
+  const value = key.value;
 
-  switch(keyType) {
-    case "number":
-      storageDigit(key);
-      break;
-    case "operator":
-      storageOperator(key);
-      break;
-    case "action":
-      if(key.value === "equal") calculateExpression();
-      if(key.value === "delete") deleteLastDigit();
-      if(key.value === "reset") clearAllExpression();
-      break;
-    default:
-      return;
+  if(checkIfExpressionHasError()) {
+    clearAllExpression();
   }
 
-  displayExpression();
+  const KEY_TYPES = {
+    number: storageDigit,
+    operator: storageOperator,
+    action: {
+        equal: calculateExpression,
+        delete: deleteLastDigit,
+        reset: clearAllExpression
+    }
+  };
 
-  if($display.scrollLeftMax > $display.scrollLeft) scrollDisplayToRight();
+  KEY_TYPES[type][value] ? KEY_TYPES[type][value]() : KEY_TYPES[type](key);
+
+  renderExpression();
+
+  if($display.scrollLeftMax > $display.scrollLeft) {
+    scrollDisplayToRight();
+  }
 }
 
 function getKeyType(key) {
   return key.dataset.type;
 }
 
-let expression = [];
-
 function storageDigit({ value: digit }) {
-  if(expression[0]?.type === "error") clearAllExpression();
-
-  if(expression.length === 0) {
-    if(digit === ".") {
-      digit = "0.";
-    }
-
+  if(isExpressionEmpty()) {
     expression.push(
-      { value: digit, type: "number" }
+      createValueForExpression(digit, "number")
     );
     return;
   }
   
   const lastIndex = getLastIndexOfArray(expression);
 
-  if(expression[lastIndex].value.length > 0) {
-    if(expression[lastIndex].type !== "number") {
-      if(digit === ".") {
-        digit = "0.";
-      }
-
-      expression.push(
-        { value: digit, type: "number" }
-      );
-      return;
-    }
-    
-    if(digit === "." && expression[lastIndex].value.includes(digit)) return;
-
-    if(digit === "0" && expression[lastIndex].value === "0") return;
-
-    expression[lastIndex].value += digit;
+  if(expression[lastIndex].type === "operator") {
+    expression.push(
+      createValueForExpression(digit, "number")
+    );
     return;
   }
+
+  const valueOfTheLastIndex = expression[lastIndex].value;
+  
+  const numberAlreadyHasDecimalPoint = valueOfTheLastIndex.includes(".");
+  const hasOneZeroBeforeIntegerOrDecimalPlace = valueOfTheLastIndex === "0";
+
+  if(
+    (digit === "." && numberAlreadyHasDecimalPoint) ||
+    (digit === "0" && hasOneZeroBeforeIntegerOrDecimalPlace)
+  ) return;
+
+  expression[lastIndex].value += digit;
 }
 
-function displayExpression() {
-  if(expression[0]?.type === "error") {
+function renderExpression() {
+  if(checkIfExpressionHasError()) {
     $display.textContent = "Can't divide by 0";
     return;
   }
@@ -86,9 +81,7 @@ function scrollDisplayToRight() {
 }
 
 function storageOperator({ value: operator }) {
-  if(expression[0]?.type === "error") clearAllExpression();
-
-  if(expression.length === 0) return;
+  if(isExpressionEmpty()) return;
 
   const lastIndex = getLastIndexOfArray(expression);
 
@@ -98,12 +91,8 @@ function storageOperator({ value: operator }) {
   };
 
   expression.push(
-    { value: operator, type: "operator" }
+    createValueForExpression(operator, "operator")
   );
-}
-
-function getLastIndexOfArray(arr) {
-  return arr.length - 1;
 }
 
 const operations = {
@@ -114,27 +103,27 @@ const operations = {
 };
 
 function calculateExpression() {
-  if(expression.length === 0) return;
+  if(isExpressionEmpty()) return;
 
   const indexsOfMultAndDivision = getIndexsOfMultAndDivision();
 
   if(indexsOfMultAndDivision) {
     const multAndDivisionResults = calculateMultAndDivision(indexsOfMultAndDivision);
-    expression = getNewExpression(multAndDivisionResults);
+    expression = replaceCalculatedOperationsByResult(multAndDivisionResults);
   }
 
-  const sumAndSubtractionResults = calculateSumAndSubtraction();
-  expression = sumAndSubtractionResults;
+  const sumAndSubtractionResult = calculateSumAndSubtraction();
+  expression = [ sumAndSubtractionResult ];
 }
 
 function getIndexsOfMultAndDivision() {
   const indexs = [];
 
-  for(let i = 0; i < expression.length; i++) {
-    if(expression[i].value === "/" || expression[i].value === "x") {
-      indexs.push(i);
+  expression.forEach((item, index) => {
+    if(item.value === "/" || item.value === "x") {
+      indexs.push(index);
     }
-  }
+  });
 
   return indexs;
 }
@@ -142,75 +131,69 @@ function getIndexsOfMultAndDivision() {
 function calculateMultAndDivision(indexs) {
   const results = [];
 
+  const calculateOperation = (a, b, operationFunc) => (
+    operationFunc(Number(a), Number(b))
+  );
+
+  const pushResultToResultsList = (result, index) => {
+    results.push({
+      indexs: [
+        index-1, index, index+1
+      ],
+      result: String(result)
+    });
+  }
+
+  const OPERATORS_FUNCTION = {
+    "x": operations.multiply,
+    "/": operations.divide
+  };
+
   for(let i = 0; i < indexs.length; i++) {
-    let previousNumber = expression[indexs[i]-1]?.value;
-    let nextNumber = expression[indexs[i]+1]?.value || 1;
+    let numberBeforeOperator = expression[indexs[i] - 1]?.value;
+    let numberAfterOperator = expression[indexs[i] + 1]?.value || 1;
 
-    if(indexs[i-1] === indexs[i] - 2) {
-      previousNumber = results[i-1].result;
+    if(indexs[i - 1] === indexs[i] - 2) {
+      numberBeforeOperator = results[i - 1].result;
     }
 
-    if(expression[indexs[i]].value === "x") {
-      const result = operations.multiply(
-        Number(previousNumber),
-        Number(nextNumber)
-      );
+    const currentOperator = expression[indexs[i]].value;
 
-      results.push(
-        {
-          indexs: [
-            indexs[i]-1,
-            indexs[i],
-            indexs[i]+1
-          ],
-          result: String(result)
-        }
-      );
-    } else if(expression[indexs[i]].value === "/") {
-      const result = operations.divide(
-        Number(previousNumber),
-        Number(nextNumber)
-      );
+    const result = calculateOperation(
+      numberBeforeOperator,
+      numberAfterOperator,
+      OPERATORS_FUNCTION[currentOperator]
+    );
 
-      results.push(
-        {
-          indexs: [
-            indexs[i]-1,
-            indexs[i],
-            indexs[i]+1
-          ],
-          result: String(result)
-        }
-      );
-    }
+    pushResultToResultsList(result, indexs[i]);
   }
 
   return results;
 }
 
-function getNewExpression(results) {
+function replaceCalculatedOperationsByResult(results) {
   const newExpression = [];
 
-  for(let i = 0; i < expression.length; i++) {
+  for(let expressionIndex = 0; expressionIndex < expression.length; expressionIndex++) {
     let canPush = true;
 
-    for(let j = 0; j < results.length; j++) {
+    for(let resultsIndex = 0; resultsIndex < results.length; resultsIndex++) {
       if(
-        results[j].indexs[0] === i &&
-        results[j].indexs[2] !== results[j+1]?.indexs[0]
+        results[resultsIndex].indexs[0] === expressionIndex &&
+        results[resultsIndex].indexs[2] !== results[resultsIndex + 1]?.indexs[0]
       ) {
         newExpression.push(
-          { value: results[j].result, type: "number" }
+          createValueForExpression(results[resultsIndex].result, "number")
         );
       }
 
-      if(results[j].indexs.includes(i)) {
+      if(results[resultsIndex].indexs.includes(expressionIndex)) {
         canPush = false;
       }
     }
 
     if(canPush) {
-      newExpression.push(expression[i]);
+      newExpression.push(expression[expressionIndex]);
     }
   }
 
@@ -218,41 +201,44 @@ function getNewExpression(results) {
 }
 
 function calculateSumAndSubtraction() {
+  const OPERATORS_FUNCTION = {
+    "+": operations.sum,
+    "-": operations.subtract
+  };
+
   const result = expression.reduce((accumulator, currentValue, index, arr) => {
     if(currentValue.type !== "number") {
       return accumulator;
     }
 
-    if(arr[index - 1]?.value === "-") {
-      return accumulator - Number(currentValue.value);
-    }
+    const operator = arr[index - 1]?.value || "+";
 
-    return accumulator + Number(currentValue.value);
+    return OPERATORS_FUNCTION[operator](
+      accumulator,
+      Number(currentValue.value)
+    );
   }, 0);
 
   if(result === Infinity || isNaN(result)) {
-    return [
-      {
-        value: String(result),
-        type: "error"
-      }
-    ];
+    return createValueForExpression(result, "error");
   }
 
-  return [
-    {
-      value: String(result),
-      type: "number"
-    }
-  ];
+  return createValueForExpression(result, "number");
+}
+
+function createValueForExpression(value, type) {
+  return {
+    value: String(value),
+    type
+  };
 }
 
 function deleteLastDigit() {
   const lastIndex = getLastIndexOfArray(expression);
 
-  if(expression.length === 0) return;
+  if(isExpressionEmpty()) return;
 
-  if(expression[0].type === "error") {
+  if(checkIfExpressionHasError()) {
     clearAllExpression();
     return;
   }
@@ -267,6 +253,18 @@ function deleteLastDigit() {
   if(expression[lastIndex].value.length === 0) {
     expression.pop();
   }
+}
+
+function getLastIndexOfArray(arr) {
+  return arr.length - 1;
+}
+
+function isExpressionEmpty() {
+  return expression.length === 0;
+}
+
+function checkIfExpressionHasError() {
+  return expression.some(value => value.type === "error");
 }
 
 function clearAllExpression() {
