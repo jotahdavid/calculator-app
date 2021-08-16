@@ -24,7 +24,7 @@ function handleKeyClick({ currentTarget: key }) {
     }
   };
 
-  KEY_TYPES[type][value] ? KEY_TYPES[type][value]() : KEY_TYPES[type](key);
+  KEY_TYPES[type][value] ? KEY_TYPES[type][value]() : KEY_TYPES[type](value);
 
   renderExpression();
 
@@ -37,7 +37,7 @@ function getKeyType(key) {
   return key.dataset.type;
 }
 
-function storageDigit({ value: digit }) {
+function storageDigit(digit) {
   if(isExpressionEmpty()) {
     expression.push(
       createValueForExpression(digit, "number")
@@ -80,7 +80,7 @@ function scrollDisplayToRight() {
   $display.scrollLeft = $display.scrollLeftMax;
 }
 
-function storageOperator({ value: operator }) {
+function storageOperator(operator) {
   if(isExpressionEmpty()) return;
 
   const lastIndex = getLastIndexOfArray(expression);
