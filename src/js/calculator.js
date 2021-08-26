@@ -1,14 +1,15 @@
 export function addKeysEvent() {
   const $keys = document.querySelectorAll(".keys");
   $keys.forEach(key => key.addEventListener("click", handleKeyClick));
+  document.body.addEventListener("keydown", handleKeyPress);
 }
 
 const $display = document.querySelector(".calculator__result");
 let expression = [];
 
 function handleKeyClick({ currentTarget: key }) {
-  const type = getKeyType(key);
   const value = key.value;
+  const type = getKeyTypeClicked(key);
 
   if(checkIfExpressionHasError()) {
     clearAllExpression();
@@ -33,8 +34,54 @@ function handleKeyClick({ currentTarget: key }) {
   }
 }
 
-function getKeyType(key) {
+function getKeyTypeClicked(key) {
   return key.dataset.type;
+}
+
+function handleKeyPress(event) {
+  const value = event.key === "*" ? "x" : event.key.toLowerCase();
+  const type = getKeyTypePressed(value);
+
+  if(type === null) return;
+
+  event.preventDefault();
+  
+  if(checkIfExpressionHasError()) {
+    clearAllExpression();
+  }
+
+  const KEY_TYPES = {
+    number: storageDigit,
+    operator: storageOperator,
+    action: {
+        enter: calculateExpression,
+        backspace: deleteLastDigit,
+    }
+  };
+
+  KEY_TYPES[type][value] ? KEY_TYPES[type][value]() : KEY_TYPES[type](value);
+
+  renderExpression();
+
+  if($display.scrollLeftMax > $display.scrollLeft) {
+    scrollDisplayToRight();
+  }
+}
+
+function getKeyTypePressed(key) {
+  const TYPES = {
+    number: [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "." ],
+    operator: [ "/", "x", "-", "+" ],
+    action: [ "enter", "backspace" ],
+  };
+
+  for(const [ type, keys ] of Object.entries(TYPES)) {
+    if(keys.includes(key)) {
+      return type;
+    }
+  }
+
+  return null;
 }
 
 function storageDigit(digit) {
