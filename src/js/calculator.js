@@ -69,13 +69,13 @@ function handleKeyPress(event) {
 }
 
 function getKeyTypePressed(key) {
-  const TYPES = {
+  const VALUE_TYPES = {
     number: [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "." ],
     operator: [ "/", "x", "-", "+" ],
     action: [ "enter", "backspace" ],
   };
 
-  for(const [ type, keys ] of Object.entries(TYPES)) {
+  for(const [ type, keys ] of Object.entries(VALUE_TYPES)) {
     if(keys.includes(key)) {
       return type;
     }
@@ -128,14 +128,31 @@ function scrollDisplayToRight() {
 }
 
 function storageOperator(operator) {
-  if(isExpressionEmpty()) return;
+  if(isExpressionEmpty()) {
+    expression.push(
+      createValueForExpression(operator, "number")
+    );
+    return;
+  }
 
   const lastIndex = getLastIndexOfArray(expression);
 
+  if(
+    expression[lastIndex].type === "number" &&
+    expression[lastIndex].value === "-"
+  ) return;
+
   if(expression[lastIndex].type === "operator") {
+    if(operator === "-") {
+      expression.push(
+        createValueForExpression(operator, "number")
+      );
+      return;
+    }
+
     expression[lastIndex].value = operator;
     return;
-  };
+  }
 
   expression.push(
     createValueForExpression(operator, "operator")
@@ -254,7 +271,7 @@ function calculateSumAndSubtraction() {
   };
 
   const result = expression.reduce((accumulator, currentValue, index, arr) => {
-    if(currentValue.type !== "number") {
+    if(currentValue.type !== "number" || currentValue.value === "-") {
       return accumulator;
     }
 
