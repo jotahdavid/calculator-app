@@ -19,9 +19,9 @@ function handleKeyClick({ currentTarget: key }) {
     number: storageDigit,
     operator: storageOperator,
     action: {
-        equal: calculateExpression,
-        delete: deleteLastDigit,
-        reset: clearAllExpression
+      equal: calculateExpression,
+      delete: deleteLastDigit,
+      reset: clearAllExpression
     }
   };
 
@@ -54,8 +54,8 @@ function handleKeyPress(event) {
     number: storageDigit,
     operator: storageOperator,
     action: {
-        enter: calculateExpression,
-        backspace: deleteLastDigit,
+      enter: calculateExpression,
+      backspace: deleteLastDigit,
     }
   };
 
@@ -129,9 +129,11 @@ function scrollDisplayToRight() {
 
 function storageOperator(operator) {
   if(isExpressionEmpty()) {
-    expression.push(
-      createValueForExpression(operator, "number")
-    );
+    if(operator === "-") {
+      expression.push(
+        createValueForExpression(operator, "number")
+      );
+    }
     return;
   }
 
@@ -219,6 +221,10 @@ function calculateMultAndDivision(indexs) {
 
     if(indexs[i - 1] === indexs[i] - 2) {
       numberBeforeOperator = results[i - 1].result;
+    }
+
+    if(numberAfterOperator === "-") {
+      numberAfterOperator = 1;
     }
 
     const currentOperator = expression[indexs[i]].value;
