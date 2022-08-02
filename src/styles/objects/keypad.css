@@ -4,7 +4,7 @@
   border-radius: min(1rem, 4vw);
 
   display: grid;
-  gap: .8rem min(1.5rem, 4vw);
+  gap: 0.8rem min(1.5rem, 4vw);
   grid-template-columns: repeat(4, 1fr);
 }
 

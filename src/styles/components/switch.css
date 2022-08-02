@@ -7,10 +7,10 @@
 }
 
 .switch__index {
-  font-size: min(.8rem, 4vw);
+  font-size: min(0.8rem, 4vw);
   font-family: 'Spartan', sans-serif;
   color: var(--main-text-color);
-  
+
   width: min(70px, 20vw);
   display: flex;
   justify-content: space-around;
@@ -47,7 +47,7 @@
 }
 
 .switch__slider::after {
-  content: "";
+  content: '';
   display: block;
   --size: min(17px, 5vw);
   width: var(--size);
@@ -57,17 +57,17 @@
 
   position: relative;
   left: 0;
-  
-  -webkit-transition: left .4s;
-  transition: left .4s;
+
+  -webkit-transition: left 0.4s;
+  transition: left 0.4s;
 }
 
-.switch__slider[data-index="1"]::after {
+.switch__slider[data-index='1']::after {
   left: 0;
 }
-.switch__slider[data-index="2"]::after {
+.switch__slider[data-index='2']::after {
   left: calc(50% - (var(--size) / 2));
 }
-.switch__slider[data-index="3"]::after {
+.switch__slider[data-index='3']::after {
   left: calc(100% - var(--size));
 }

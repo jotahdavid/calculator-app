@@ -1,4 +1,5 @@
-body, body.-theme1 {
+body,
+body.-theme1 {
   /* Backgrounds */
   --main-background: hsl(222, 26%, 31%);
   --keypad-background: hsl(223, 31%, 20%);

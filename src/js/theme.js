@@ -1,11 +1,11 @@
 function storeAppTheme(themeIndex) {
-  localStorage.setItem("APP_THEME", JSON.stringify(themeIndex));
+  localStorage.setItem('APP_THEME', JSON.stringify(themeIndex));
 }
 
 function getAppThemeStored() {
-  let themeIndex = JSON.parse(localStorage.getItem("APP_THEME")) || 1;
+  let themeIndex = JSON.parse(localStorage.getItem('APP_THEME')) || 1;
 
-  if(themeIndex < 1 || themeIndex > 3) {
+  if (themeIndex < 1 || themeIndex > 3) {
     themeIndex = 1;
   }
 
@@ -13,17 +13,19 @@ function getAppThemeStored() {
 }
 
 function getSliderIndex() {
-  const { dataset: { index } } = document.querySelector(".switch__slider");
+  const {
+    dataset: { index },
+  } = document.querySelector('.switch__slider');
   return index;
 }
 
 function changeSliderIndex(themeIndex) {
-  const { dataset: sliderData } = document.querySelector(".switch__slider");
+  const { dataset: sliderData } = document.querySelector('.switch__slider');
 
-  if(themeIndex) {
+  if (themeIndex) {
     sliderData.index = themeIndex;
   } else {
-    sliderData.index < 3 ? sliderData.index++ : sliderData.index = 1;
+    sliderData.index < 3 ? sliderData.index++ : (sliderData.index = 1);
   }
 }
 
@@ -46,8 +48,8 @@ export function addSwitchEvent() {
     const themeIndex = getSliderIndex();
     switchTheme(themeIndex);
     storeAppTheme(themeIndex);
-  }
+  };
 
-  const $switchButton = document.querySelector(".switch__field");
-  $switchButton.addEventListener("click", handleSwitchClick);
+  const $switchButton = document.querySelector('.switch__field');
+  $switchButton.addEventListener('click', handleSwitchClick);
 }

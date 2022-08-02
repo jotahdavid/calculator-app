@@ -3,7 +3,7 @@
   width: 85%;
   margin: 0 auto;
   margin-top: auto;
-  padding-top: .8rem;
+  padding-top: 0.8rem;
 
   display: flex;
   align-items: center;
@@ -11,8 +11,7 @@
 }
 
 .header__title,
-.header__subtitle
-{
+.header__subtitle {
   font-family: 'Spartan', sans-serif;
   color: var(--main-text-color);
 }
@@ -23,7 +22,7 @@
 }
 
 .header__subtitle {
-  font-size: min(.8rem, 4vw);
+  font-size: min(0.8rem, 4vw);
   letter-spacing: 1px;
   text-transform: uppercase;
   grid-row: 2 / 3;
