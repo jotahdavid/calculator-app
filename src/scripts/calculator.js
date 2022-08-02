@@ -1,9 +1,3 @@
-export function addKeysEvent() {
-  const $keys = document.querySelectorAll('.keys');
-  $keys.forEach((key) => key.addEventListener('click', handleKeyClick));
-  document.body.addEventListener('keydown', handleKeyPress);
-}
-
 const $display = document.querySelector('.calculator__result');
 let expression = [];
 
@@ -334,4 +328,10 @@ function checkIfExpressionHasError() {
 
 function clearAllExpression() {
   expression = [];
+}
+
+export function addKeysEvent() {
+  const $keys = document.querySelectorAll('.keys');
+  $keys.forEach((key) => key.addEventListener('click', handleKeyClick));
+  document.body.addEventListener('keydown', handleKeyPress);
 }
