@@ -1,7 +1,6 @@
 import { Expression } from './lib/Expression.js';
 import { MathSymbol } from './lib/MathSymbol.js';
 
-const $display = document.querySelector('.calculator__result');
 const expression = new Expression();
 
 function handleKeyClick({ currentTarget: key }) {
@@ -22,13 +21,14 @@ function handleKeyClick({ currentTarget: key }) {
     },
   };
 
-  KEY_TYPES[type][value] ? KEY_TYPES[type][value]() : KEY_TYPES[type](value);
+  if (KEY_TYPES[type][value]) {
+    KEY_TYPES[type][value]();
+  } else {
+    KEY_TYPES[type](value);
+  }
 
   renderExpression(expression.values);
-
-  if ($display.scrollLeftMax > $display.scrollLeft) {
-    scrollDisplayToRight();
-  }
+  scrollDisplayToRight();
 }
 
 function getKeyTypeClicked(key) {
@@ -56,13 +56,14 @@ function handleKeyPress(event) {
     },
   };
 
-  KEY_TYPES[type][value] ? KEY_TYPES[type][value]() : KEY_TYPES[type](value);
+  if (KEY_TYPES[type][value]) {
+    KEY_TYPES[type][value]();
+  } else {
+    KEY_TYPES[type](value);
+  }
 
   renderExpression(expression.values);
-
-  if ($display.scrollLeftMax > $display.scrollLeft) {
-    scrollDisplayToRight();
-  }
+  scrollDisplayToRight();
 }
 
 function getKeyTypePressed(key) {
@@ -107,15 +108,16 @@ function storageDigit(digit) {
 }
 
 function renderExpression(values) {
+  const $display = document.querySelector('.calculator__result');
   if (expression.hasError()) {
     $display.textContent = "Can't divide by 0";
     return;
   }
-
   $display.textContent = values.map((item) => item.value).join('');
 }
 
 function scrollDisplayToRight() {
+  const $display = document.querySelector('.calculator__result');
   $display.scrollLeft = $display.scrollLeftMax;
 }
 
