@@ -1,12 +1,15 @@
+import { Expression } from './lib/Expression.js';
+import { MathSymbol } from './lib/MathSymbol.js';
+
 const $display = document.querySelector('.calculator__result');
-let expression = [];
+const expression = new Expression();
 
 function handleKeyClick({ currentTarget: key }) {
   const value = key.value;
   const type = getKeyTypeClicked(key);
 
-  if (checkIfExpressionHasError()) {
-    clearAllExpression();
+  if (expression.hasError()) {
+    expression.clear();
   }
 
   const KEY_TYPES = {
@@ -15,13 +18,13 @@ function handleKeyClick({ currentTarget: key }) {
     action: {
       equal: calculateExpression,
       delete: deleteLastDigit,
-      reset: clearAllExpression,
+      reset: expression.clear.bind(expression),
     },
   };
 
   KEY_TYPES[type][value] ? KEY_TYPES[type][value]() : KEY_TYPES[type](value);
 
-  renderExpression();
+  renderExpression(expression.values);
 
   if ($display.scrollLeftMax > $display.scrollLeft) {
     scrollDisplayToRight();
@@ -40,8 +43,8 @@ function handleKeyPress(event) {
 
   event.preventDefault();
 
-  if (checkIfExpressionHasError()) {
-    clearAllExpression();
+  if (expression.hasError()) {
+    expression.clear();
   }
 
   const KEY_TYPES = {
@@ -55,7 +58,7 @@ function handleKeyPress(event) {
 
   KEY_TYPES[type][value] ? KEY_TYPES[type][value]() : KEY_TYPES[type](value);
 
-  renderExpression();
+  renderExpression(expression.values);
 
   if ($display.scrollLeftMax > $display.scrollLeft) {
     scrollDisplayToRight();
@@ -79,39 +82,37 @@ function getKeyTypePressed(key) {
 }
 
 function storageDigit(digit) {
-  if (isExpressionEmpty()) {
-    expression.push(createValueForExpression(digit, 'number'));
+  if (expression.isEmpty()) {
+    expression.addSymbol(digit, 'number');
     return;
   }
 
-  const lastIndex = getLastIndexOfArray(expression);
-
-  if (expression[lastIndex].type === 'operator') {
-    expression.push(createValueForExpression(digit, 'number'));
+  if (expression.lastSymbol.type === 'operator') {
+    expression.addSymbol(digit, 'number');
     return;
   }
 
-  const valueOfTheLastIndex = expression[lastIndex].value;
-
-  const numberAlreadyHasDecimalPoint = valueOfTheLastIndex.includes('.');
-  const hasOneZeroBeforeIntegerOrDecimalPlace = valueOfTheLastIndex === '0';
+  const hasDecimalPoint = expression.lastSymbol.value.includes('.');
+  const hasZeroBeforeIntegerOrDecimalPlace =
+    expression.lastSymbol.value === '0';
 
   if (
-    (digit === '.' && numberAlreadyHasDecimalPoint) ||
-    (digit === '0' && hasOneZeroBeforeIntegerOrDecimalPlace)
-  )
+    (digit === '.' && hasDecimalPoint) ||
+    (digit === '0' && hasZeroBeforeIntegerOrDecimalPlace)
+  ) {
     return;
+  }
 
-  expression[lastIndex].value += digit;
+  expression.lastSymbol.append(digit);
 }
 
-function renderExpression() {
-  if (checkIfExpressionHasError()) {
+function renderExpression(values) {
+  if (expression.hasError()) {
     $display.textContent = "Can't divide by 0";
     return;
   }
 
-  $display.textContent = expression.map((item) => item.value).join('');
+  $display.textContent = values.map((item) => item.value).join('');
 }
 
 function scrollDisplayToRight() {
@@ -119,32 +120,31 @@ function scrollDisplayToRight() {
 }
 
 function storageOperator(operator) {
-  if (isExpressionEmpty()) {
+  if (expression.isEmpty()) {
     if (operator === '-') {
-      expression.push(createValueForExpression(operator, 'number'));
+      expression.addSymbol(operator, 'number');
     }
     return;
   }
 
-  const lastIndex = getLastIndexOfArray(expression);
-
   if (
-    expression[lastIndex].type === 'number' &&
-    expression[lastIndex].value === '-'
-  )
+    expression.lastSymbol.type === 'number' &&
+    expression.lastSymbol.value === '-'
+  ) {
     return;
+  }
 
-  if (expression[lastIndex].type === 'operator') {
+  if (expression.lastSymbol.type === 'operator') {
     if (operator === '-') {
-      expression.push(createValueForExpression(operator, 'number'));
+      expression.addSymbol(operator, 'number');
       return;
     }
 
-    expression[lastIndex].value = operator;
+    expression.lastSymbol.value = operator;
     return;
   }
 
-  expression.push(createValueForExpression(operator, 'operator'));
+  expression.addSymbol(operator, 'operator');
 }
 
 const operations = {
@@ -155,22 +155,30 @@ const operations = {
 };
 
 function calculateExpression() {
-  if (isExpressionEmpty()) return;
+  if (expression.isEmpty()) return;
 
-  const indexsOfMultAndDivision = getIndexsOfMultAndDivision();
+  let calculatedExpression = expression.values;
 
-  if (indexsOfMultAndDivision) {
+  const indexsOfMultAndDivision =
+    getIndexsOfMultAndDivision(calculatedExpression);
+
+  if (indexsOfMultAndDivision.length > 0) {
     const multAndDivisionResults = calculateMultAndDivision(
+      calculatedExpression,
       indexsOfMultAndDivision
     );
-    expression = replaceCalculatedOperationsByResult(multAndDivisionResults);
+    calculatedExpression = replaceCalculatedOperationsByResult(
+      calculatedExpression,
+      multAndDivisionResults
+    );
   }
 
-  const sumAndSubtractionResult = calculateSumAndSubtraction();
-  expression = [sumAndSubtractionResult];
+  const sumAndSubtractionResult =
+    calculateSumAndSubtraction(calculatedExpression);
+  expression._values = [sumAndSubtractionResult];
 }
 
-function getIndexsOfMultAndDivision() {
+function getIndexsOfMultAndDivision(expression) {
   const indexs = [];
 
   expression.forEach((item, index) => {
@@ -182,7 +190,7 @@ function getIndexsOfMultAndDivision() {
   return indexs;
 }
 
-function calculateMultAndDivision(indexs) {
+function calculateMultAndDivision(expression, indexs) {
   const results = [];
 
   const calculateOperation = (a, b, operationFunc) =>
@@ -226,7 +234,7 @@ function calculateMultAndDivision(indexs) {
   return results;
 }
 
-function replaceCalculatedOperationsByResult(results) {
+function replaceCalculatedOperationsByResult(expression, results) {
   const newExpression = [];
 
   for (
@@ -242,7 +250,7 @@ function replaceCalculatedOperationsByResult(results) {
         results[resultsIndex].indexs[2] !== results[resultsIndex + 1]?.indexs[0]
       ) {
         newExpression.push(
-          createValueForExpression(results[resultsIndex].result, 'number')
+          new MathSymbol(results[resultsIndex].result, 'number')
         );
       }
 
@@ -259,7 +267,7 @@ function replaceCalculatedOperationsByResult(results) {
   return newExpression;
 }
 
-function calculateSumAndSubtraction() {
+function calculateSumAndSubtraction(expression) {
   const OPERATORS_FUNCTION = {
     '+': operations.sum,
     '-': operations.subtract,
@@ -277,57 +285,30 @@ function calculateSumAndSubtraction() {
       Number(currentValue.value)
     );
   }, 0);
-
   if (result === Infinity || isNaN(result)) {
-    return createValueForExpression(result, 'error');
+    return new MathSymbol(String(result), 'error');
   }
 
-  return createValueForExpression(result, 'number');
-}
-
-function createValueForExpression(value, type) {
-  return {
-    value: String(value),
-    type,
-  };
+  return new MathSymbol(String(result), 'number');
 }
 
 function deleteLastDigit() {
-  const lastIndex = getLastIndexOfArray(expression);
+  if (expression.isEmpty()) return;
 
-  if (isExpressionEmpty()) return;
-
-  if (checkIfExpressionHasError()) {
-    clearAllExpression();
+  if (expression.hasError()) {
+    expression.clear();
     return;
   }
 
-  if (expression[lastIndex].type === 'operator') {
-    expression.pop();
+  if (expression.lastSymbol.type === 'operator') {
+    expression.removeLastSymbol();
     return;
   }
 
-  expression[lastIndex].value = expression[lastIndex].value.slice(0, -1);
-
-  if (expression[lastIndex].value.length === 0) {
-    expression.pop();
+  expression.lastSymbol.pop();
+  if (expression.lastSymbol.isEmpty()) {
+    expression.removeLastSymbol();
   }
-}
-
-function getLastIndexOfArray(arr) {
-  return arr.length - 1;
-}
-
-function isExpressionEmpty() {
-  return expression.length === 0;
-}
-
-function checkIfExpressionHasError() {
-  return expression.some((value) => value.type === 'error');
-}
-
-function clearAllExpression() {
-  expression = [];
 }
 
 export function addKeysEvent() {
