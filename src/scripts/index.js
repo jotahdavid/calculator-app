@@ -1,7 +1,7 @@
 import { addSwitchEvent, loadAppTheme } from './theme.js';
 import { addKeysEvent } from './calculator.js';
 
-window.addEventListener('load', () => {
+window.addEventListener('DOMContentLoaded', () => {
   addSwitchEvent();
   addKeysEvent();
   loadAppTheme();
