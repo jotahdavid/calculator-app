@@ -1,50 +1,52 @@
+const LOCAL_STORAGE_KEY = 'CALCULATOR_THEME';
+
 function storeAppTheme(themeIndex) {
-  localStorage.setItem('APP_THEME', JSON.stringify(themeIndex));
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(themeIndex));
 }
 
 function getAppThemeStored() {
-  let themeIndex = JSON.parse(localStorage.getItem('APP_THEME')) || 1;
+  const themeIndex =
+    Number(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))) ?? 1;
 
-  if (themeIndex < 1 || themeIndex > 3) {
-    themeIndex = 1;
+  return isIndexBetweenSliderLimit(themeIndex) ? themeIndex : 1;
+
+  function isIndexBetweenSliderLimit(index) {
+    return index >= 1 && index <= 3;
   }
-
-  return themeIndex;
 }
 
 function getSliderIndex() {
-  const {
-    dataset: { index },
-  } = document.querySelector('.switch__slider');
-  return index;
+  const $slider = document.querySelector('.switch__slider');
+  return Number($slider.getAttribute('data-index'));
 }
 
-function changeSliderIndex(themeIndex) {
-  const { dataset: sliderData } = document.querySelector('.switch__slider');
+function setSliderIndex(index) {
+  const $slider = document.querySelector('.switch__slider');
+  $slider.setAttribute('data-index', index);
+}
 
-  if (themeIndex) {
-    sliderData.index = themeIndex;
-  } else {
-    sliderData.index < 3 ? sliderData.index++ : (sliderData.index = 1);
-  }
+function increaseSliderIndex() {
+  const oldIndex = getSliderIndex();
+  const newIndex = oldIndex < 3 ? oldIndex + 1 : 1;
+  setSliderIndex(newIndex);
+}
+
+function switchTheme(themeIndex) {
+  const $body = document.body;
+  $body.setAttribute('data-theme', themeIndex);
 }
 
 export function loadAppTheme() {
   const themeIndex = getAppThemeStored();
   switchTheme(themeIndex);
-  changeSliderIndex(themeIndex);
-}
-
-function switchTheme(themeIndex) {
-  const $body = document.body;
-  $body.classList = `-theme${themeIndex}`;
+  setSliderIndex(themeIndex);
 }
 
 export function addSwitchEvent() {
   const handleSwitchClick = (event) => {
     event.preventDefault();
+    increaseSliderIndex();
 
-    changeSliderIndex();
     const themeIndex = getSliderIndex();
     switchTheme(themeIndex);
     storeAppTheme(themeIndex);

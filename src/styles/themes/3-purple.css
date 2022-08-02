@@ -1,4 +1,4 @@
-body.-theme3 {
+body[data-theme='3'] {
   /* Backgrounds */
   --main-background: hsl(268, 75%, 9%);
   --keypad-background: hsl(268, 71%, 12%);
