@@ -3,6 +3,22 @@ import { MathSymbol } from './lib/MathSymbol.js';
 
 const expression = new Expression();
 
+const KEY_TYPES = {
+  number: storageDigit,
+  operator: storageOperator,
+  action: {
+    equal: calculateExpression,
+    delete: deleteLastDigit,
+    reset: () => expression.clear(),
+  },
+};
+
+const VALUE_TYPES = {
+  number: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'],
+  operator: ['/', 'x', '-', '+'],
+  action: ['equal', 'delete'],
+};
+
 function handleKeyClick({ currentTarget: key }) {
   const value = key.value;
   const type = getKeyTypeClicked(key);
@@ -10,16 +26,6 @@ function handleKeyClick({ currentTarget: key }) {
   if (expression.hasError()) {
     expression.clear();
   }
-
-  const KEY_TYPES = {
-    number: storageDigit,
-    operator: storageOperator,
-    action: {
-      equal: calculateExpression,
-      delete: deleteLastDigit,
-      reset: expression.clear.bind(expression),
-    },
-  };
 
   if (KEY_TYPES[type][value]) {
     KEY_TYPES[type][value]();
@@ -36,25 +42,15 @@ function getKeyTypeClicked(key) {
 }
 
 function handleKeyPress(event) {
-  const value = event.key === '*' ? 'x' : event.key.toLowerCase();
+  const value = getKeyValuePressed(event);
   const type = getKeyTypePressed(value);
 
   if (type === null) return;
-
   event.preventDefault();
 
   if (expression.hasError()) {
     expression.clear();
   }
-
-  const KEY_TYPES = {
-    number: storageDigit,
-    operator: storageOperator,
-    action: {
-      enter: calculateExpression,
-      backspace: deleteLastDigit,
-    },
-  };
 
   if (KEY_TYPES[type][value]) {
     KEY_TYPES[type][value]();
@@ -66,13 +62,24 @@ function handleKeyPress(event) {
   scrollDisplayToRight();
 }
 
-function getKeyTypePressed(key) {
-  const VALUE_TYPES = {
-    number: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'],
-    operator: ['/', 'x', '-', '+'],
-    action: ['enter', 'backspace'],
-  };
+function getKeyValuePressed(event) {
+  const key = event.key.toLowerCase();
 
+  switch (key) {
+    case '*':
+      return 'x';
+    case ',':
+      return '.';
+    case 'enter':
+      return 'equal';
+    case 'backspace':
+      return 'delete';
+    default:
+      return key;
+  }
+}
+
+function getKeyTypePressed(key) {
   for (const [type, keys] of Object.entries(VALUE_TYPES)) {
     if (keys.includes(key)) {
       return type;
