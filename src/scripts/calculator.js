@@ -87,48 +87,21 @@ function runCalculatorAction(value, type) {
 }
 
 function storageDigit(digit) {
-  if (expression.isEmpty()) {
-    expression.addSymbol(digit, 'number');
-    return;
-  }
-
-  if (expression.lastSymbol.type === 'operator') {
+  if (expression.isEmpty() || expression.lastSymbol.type === 'operator') {
     expression.addSymbol(digit, 'number');
     return;
   }
 
   const hasDecimalPoint = expression.lastSymbol.value.includes('.');
-  const hasZeroBeforeIntegerOrDecimalPlace =
-    expression.lastSymbol.value === '0';
-
-  if (
-    (digit === '.' && hasDecimalPoint) ||
-    (digit === '0' && hasZeroBeforeIntegerOrDecimalPlace)
-  ) {
-    return;
-  }
+  if (digit === '.' && hasDecimalPoint) return;
 
   expression.lastSymbol.append(digit);
-}
-
-function renderExpression(values) {
-  const $display = document.querySelector('.calculator__result');
-  if (expression.hasError()) {
-    $display.textContent = "Can't divide by 0";
-    return;
-  }
-  $display.textContent = values.map((item) => item.value).join('');
-}
-
-function scrollDisplayToRight() {
-  const $display = document.querySelector('.calculator__result');
-  $display.scrollLeft = $display.scrollLeftMax;
 }
 
 function storageOperator(operator) {
   if (expression.isEmpty()) {
     if (operator === '-') {
-      expression.addSymbol(operator, 'number');
+      storageDigit(operator);
     }
     return;
   }
@@ -140,17 +113,17 @@ function storageOperator(operator) {
     return;
   }
 
-  if (expression.lastSymbol.type === 'operator') {
-    if (operator === '-') {
-      expression.addSymbol(operator, 'number');
-      return;
-    }
-
-    expression.lastSymbol.value = operator;
+  if (expression.lastSymbol.type !== 'operator') {
+    expression.addSymbol(operator, 'operator');
     return;
   }
 
-  expression.addSymbol(operator, 'operator');
+  if (operator === '-') {
+    storageDigit(operator);
+    return;
+  }
+
+  expression.lastSymbol.value = operator;
 }
 
 const operations = {
@@ -306,15 +279,27 @@ function deleteLastDigit() {
     return;
   }
 
-  if (expression.lastSymbol.type === 'operator') {
+  expression.lastSymbol.pop();
+  if (
+    expression.lastSymbol.isEmpty() ||
+    expression.lastSymbol.type === 'operator'
+  ) {
     expression.removeLastSymbol();
+  }
+}
+
+function renderExpression(values) {
+  const $display = document.querySelector('.calculator__result');
+  if (expression.hasError()) {
+    $display.textContent = "Can't divide by 0";
     return;
   }
+  $display.textContent = values.map((item) => item.value).join('');
+}
 
-  expression.lastSymbol.pop();
-  if (expression.lastSymbol.isEmpty()) {
-    expression.removeLastSymbol();
-  }
+function scrollDisplayToRight() {
+  const $display = document.querySelector('.calculator__result');
+  $display.scrollLeft = $display.scrollLeftMax;
 }
 
 export function addKeysEvent() {
