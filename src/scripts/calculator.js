@@ -3,38 +3,11 @@ import { MathSymbol } from './lib/MathSymbol.js';
 
 const expression = new Expression();
 
-const KEY_TYPES = {
-  number: storageDigit,
-  operator: storageOperator,
-  action: {
-    equal: calculateExpression,
-    delete: deleteLastDigit,
-    reset: () => expression.clear(),
-  },
-};
-
-const VALUE_TYPES = {
-  number: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'],
-  operator: ['/', 'x', '-', '+'],
-  action: ['equal', 'delete'],
-};
-
 function handleKeyClick({ currentTarget: key }) {
   const value = key.value;
   const type = getKeyTypeClicked(key);
 
-  if (expression.hasError()) {
-    expression.clear();
-  }
-
-  if (KEY_TYPES[type][value]) {
-    KEY_TYPES[type][value]();
-  } else {
-    KEY_TYPES[type](value);
-  }
-
-  renderExpression(expression.values);
-  scrollDisplayToRight();
+  handleCalculatorAction(value, type);
 }
 
 function getKeyTypeClicked(key) {
@@ -48,18 +21,7 @@ function handleKeyPress(event) {
   if (type === null) return;
   event.preventDefault();
 
-  if (expression.hasError()) {
-    expression.clear();
-  }
-
-  if (KEY_TYPES[type][value]) {
-    KEY_TYPES[type][value]();
-  } else {
-    KEY_TYPES[type](value);
-  }
-
-  renderExpression(expression.values);
-  scrollDisplayToRight();
+  handleCalculatorAction(value, type);
 }
 
 function getKeyValuePressed(event) {
@@ -79,6 +41,12 @@ function getKeyValuePressed(event) {
   }
 }
 
+const VALUE_TYPES = {
+  number: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'],
+  operator: ['/', 'x', '-', '+'],
+  action: ['equal', 'delete'],
+};
+
 function getKeyTypePressed(key) {
   for (const [type, keys] of Object.entries(VALUE_TYPES)) {
     if (keys.includes(key)) {
@@ -87,6 +55,35 @@ function getKeyTypePressed(key) {
   }
 
   return null;
+}
+
+function handleCalculatorAction(value, type) {
+  if (expression.hasError()) {
+    expression.clear();
+  }
+
+  runCalculatorAction(value, type);
+  renderExpression(expression.values);
+  scrollDisplayToRight();
+}
+
+const KEY_TYPES = {
+  number: storageDigit,
+  operator: storageOperator,
+  action: {
+    equal: calculateExpression,
+    delete: deleteLastDigit,
+    reset: () => expression.clear(),
+  },
+};
+
+function runCalculatorAction(value, type) {
+  if (KEY_TYPES[type][value]) {
+    KEY_TYPES[type][value]();
+    return;
+  }
+
+  KEY_TYPES[type](value);
 }
 
 function storageDigit(digit) {
