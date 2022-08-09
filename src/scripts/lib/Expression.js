@@ -40,11 +40,11 @@ export class Expression {
   }
 
   /**
-   * @returns {MathSymbol}
+   * @returns {MathSymbol | null}
    */
   get lastSymbol() {
     const values = this.values;
-    return values[values.length - 1];
+    return values[values.length - 1] ?? null;
   }
 
   /**
