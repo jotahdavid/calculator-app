@@ -64,7 +64,6 @@ function handleCalculatorAction(value, type) {
 
   runCalculatorAction(value, type);
   renderExpression(expression.values);
-  scrollDisplayToRight();
 }
 
 const KEY_TYPES = {
@@ -118,7 +117,7 @@ function storageOperator(operator) {
     return;
   }
 
-  if (operator === '-') {
+  if (expression.lastSymbol.type === 'operator' && operator === '-') {
     storageDigit(operator);
     return;
   }
@@ -126,7 +125,7 @@ function storageOperator(operator) {
   expression.lastSymbol.value = operator;
 }
 
-const operations = {
+const OPERATIONS = {
   sum: (a, b = 0) => a + b,
   subtract: (a, b = 0) => a - b,
   divide: (a, b = 1) => a / b,
@@ -136,25 +135,13 @@ const operations = {
 function calculateExpression() {
   if (expression.isEmpty()) return;
 
-  let calculatedExpression = expression.values;
+  const multAndDivisionResults = calculateMultAndDivision(expression.values);
+  const result = calculateSumAndSubtraction(
+    replaceCalculatedOperations(expression.values, multAndDivisionResults)
+  );
 
-  const indexsOfMultAndDivision =
-    getIndexsOfMultAndDivision(calculatedExpression);
-
-  if (indexsOfMultAndDivision.length > 0) {
-    const multAndDivisionResults = calculateMultAndDivision(
-      calculatedExpression,
-      indexsOfMultAndDivision
-    );
-    calculatedExpression = replaceCalculatedOperationsByResult(
-      calculatedExpression,
-      multAndDivisionResults
-    );
-  }
-
-  const sumAndSubtractionResult =
-    calculateSumAndSubtraction(calculatedExpression);
-  expression._values = [sumAndSubtractionResult];
+  expression.clear();
+  expression.addSymbol(result.value, result.type);
 }
 
 function getIndexsOfMultAndDivision(expression) {
@@ -169,23 +156,10 @@ function getIndexsOfMultAndDivision(expression) {
   return indexs;
 }
 
-function calculateMultAndDivision(expression, indexs) {
+function calculateMultAndDivision(expression) {
+  const indexs = getIndexsOfMultAndDivision(expression);
+
   const results = [];
-
-  const calculateOperation = (a, b, operationFunc) =>
-    operationFunc(Number(a), Number(b));
-
-  const pushResultToResultsList = (result, index) => {
-    results.push({
-      indexs: [index - 1, index, index + 1],
-      result: String(result),
-    });
-  };
-
-  const OPERATORS_FUNCTION = {
-    x: operations.multiply,
-    '/': operations.divide,
-  };
 
   for (let i = 0; i < indexs.length; i++) {
     let numberBeforeOperator = expression[indexs[i] - 1]?.value;
@@ -204,16 +178,32 @@ function calculateMultAndDivision(expression, indexs) {
     const result = calculateOperation(
       numberBeforeOperator,
       numberAfterOperator,
-      OPERATORS_FUNCTION[currentOperator]
+      currentOperator
     );
 
-    pushResultToResultsList(result, indexs[i]);
+    results.push(parseResult(result, indexs[i]));
   }
 
   return results;
+
+  function calculateOperation(x, y, operator) {
+    const OPERATORS_FUNCTION = {
+      x: OPERATIONS.multiply,
+      '/': OPERATIONS.divide,
+    };
+
+    return OPERATORS_FUNCTION[operator](Number(x), Number(y));
+  }
+
+  function parseResult(result, index) {
+    return {
+      indexs: [index - 1, index, index + 1],
+      result: String(result),
+    };
+  }
 }
 
-function replaceCalculatedOperationsByResult(expression, results) {
+function replaceCalculatedOperations(expression, results) {
   const newExpression = [];
 
   for (
@@ -248,8 +238,8 @@ function replaceCalculatedOperationsByResult(expression, results) {
 
 function calculateSumAndSubtraction(expression) {
   const OPERATORS_FUNCTION = {
-    '+': operations.sum,
-    '-': operations.subtract,
+    '+': OPERATIONS.sum,
+    '-': OPERATIONS.subtract,
   };
 
   const result = expression.reduce((accumulator, currentValue, index, arr) => {
@@ -258,17 +248,16 @@ function calculateSumAndSubtraction(expression) {
     }
 
     const operator = arr[index - 1]?.value || '+';
-
     return OPERATORS_FUNCTION[operator](
       accumulator,
       Number(currentValue.value)
     );
   }, 0);
-  if (result === Infinity || isNaN(result)) {
-    return new MathSymbol(String(result), 'error');
-  }
 
-  return new MathSymbol(String(result), 'number');
+  if (result === Infinity || isNaN(result)) {
+    return { value: String(result), type: 'error' };
+  }
+  return { value: String(result), type: 'number' };
 }
 
 function deleteLastDigit() {
@@ -295,6 +284,7 @@ function renderExpression(values) {
     return;
   }
   $display.textContent = values.map((item) => item.value).join('');
+  scrollDisplayToRight();
 }
 
 function scrollDisplayToRight() {
