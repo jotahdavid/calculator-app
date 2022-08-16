@@ -145,13 +145,18 @@ const OPERATIONS = {
 function calculateExpression() {
   if (expression.isEmpty()) return;
 
-  const multAndDivisionResults = calculateMultAndDivision(expression.values);
-  const result = calculateSumAndSubtraction(
-    replaceCalculatedOperations(expression.values, multAndDivisionResults)
-  );
-
+  const expressionValues = expression.values;
   expression.clear();
-  expression.addSymbol(result.value, result.type);
+
+  try {
+    const multAndDivisionResults = calculateMultAndDivision(expressionValues);
+    const result = calculateSumAndSubtraction(
+      replaceCalculatedOperations(expressionValues, multAndDivisionResults)
+    );
+    expression.addSymbol(result.value, result.type);
+  } catch (err) {
+    expression.addSymbol(err.message, 'error');
+  }
 }
 
 function getIndexsOfMultAndDivision(expression) {
@@ -184,6 +189,10 @@ function calculateMultAndDivision(expression) {
     }
 
     const currentOperator = expression[indexs[i]].value;
+
+    if (currentOperator === '/' && numberAfterOperator === '0') {
+      throw new Error(`Can't divide by 0`);
+    }
 
     const result = calculateOperation(
       numberBeforeOperator,
@@ -290,10 +299,11 @@ function deleteLastDigit() {
 function renderExpression(values) {
   const $display = document.querySelector('.calculator__result');
   if (expression.hasError()) {
-    $display.textContent = "Can't divide by 0";
-    return;
+    const error = expression.values.find((item) => item.type === 'error');
+    $display.textContent = error.value;
+  } else {
+    $display.textContent = values.map((item) => item.value).join('');
   }
-  $display.textContent = values.map((item) => item.value).join('');
   scrollDisplayToRight();
 }
 
