@@ -5,4 +5,6 @@ window.addEventListener('DOMContentLoaded', () => {
   addSwitchEvent();
   addKeysEvent();
   loadAppTheme();
+  document.querySelector('.calculator__result').textContent =
+    '270038681876704580';
 });

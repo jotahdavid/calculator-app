@@ -29,6 +29,24 @@
   white-space: nowrap;
 }
 
+.calculator__result::-webkit-scrollbar {
+  height: 10px;
+}
+
+.calculator__result::-webkit-scrollbar-track {
+  background-color: var(--keypad-background);
+  border-radius: 15px;
+}
+
+.calculator__result::-webkit-scrollbar-thumb {
+  background-color: var(--equal-background);
+  border-radius: 15px;
+}
+
+.calculator__result::-webkit-scrollbar-thumb:hover {
+  background-color: var(--equal-shadow);
+}
+
 .calculator__result::after {
   content: '|';
   color: var(--equal-background);
