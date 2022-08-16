@@ -309,7 +309,7 @@ function renderExpression(values) {
 
 function scrollDisplayToRight() {
   const $display = document.querySelector('.calculator__result');
-  $display.scrollLeft = $display.scrollLeftMax;
+  $display.scrollLeft = $display.scrollWidth - $display.offsetWidth;
 }
 
 export function addKeysEvent() {
