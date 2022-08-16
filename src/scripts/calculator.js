@@ -87,12 +87,22 @@ function runCalculatorAction(value, type) {
 
 function storageDigit(digit) {
   if (expression.isEmpty() || expression.lastSymbol.type === 'operator') {
+    if (digit === '.') {
+      expression.addSymbol('0.', 'number');
+      return;
+    }
+
     expression.addSymbol(digit, 'number');
     return;
   }
 
   const hasDecimalPoint = expression.lastSymbol.value.includes('.');
   if (digit === '.' && hasDecimalPoint) return;
+
+  if (digit === '.' && expression.lastSymbol.value === '-') {
+    expression.lastSymbol.append('0.');
+    return;
+  }
 
   expression.lastSymbol.append(digit);
 }
