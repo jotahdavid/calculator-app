@@ -22,6 +22,16 @@ export class Expression {
    * @param {MathSymbolType} type
    * @returns {MathSymbol}
    */
+  setResult(value, type) {
+    this.clear();
+    return this.addSymbol(value, type);
+  }
+
+  /**
+   * @param {string} value
+   * @param {MathSymbolType} type
+   * @returns {MathSymbol}
+   */
   addSymbol(value, type) {
     const digit = new MathSymbol(value, type);
     this._values.push(digit);

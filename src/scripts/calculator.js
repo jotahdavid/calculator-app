@@ -142,21 +142,16 @@ const OPERATIONS = {
 function calculateExpression() {
   if (expression.isEmpty()) return;
 
-  const expressionValues = expression.values;
-  expression.clear();
-
   try {
-    const multAndDivisionResults = calculateMultAndDivision(expressionValues);
-    const result = calculateSumAndSubtraction(
-      replaceCalculatedOperations(expressionValues, multAndDivisionResults)
-    );
-    expression.addSymbol(result.value, result.type);
+    const multAndDivisionResults = calculateMultiplicationDivision(expression.values);
+    const result = calculateSumSubtraction(multAndDivisionResults);
+    expression.setResult(result.value, result.type);
   } catch (err) {
-    expression.addSymbol(err.message, 'error');
+    expression.setResult(err.message, 'error');
   }
 }
 
-function getIndexsOfMultAndDivision(expression) {
+function getIndexsOfMultiplicationDivision(expression) {
   const indexs = [];
 
   expression.forEach((item, index) => {
@@ -168,35 +163,40 @@ function getIndexsOfMultAndDivision(expression) {
   return indexs;
 }
 
-function calculateMultAndDivision(expression) {
-  const indexs = getIndexsOfMultAndDivision(expression);
+function calculateMultiplicationDivision(expression) {
+  const indexs = getIndexsOfMultiplicationDivision(expression);
 
   const results = [];
 
   for (let i = 0; i < indexs.length; i++) {
-    let numberBeforeOperator = expression[indexs[i] - 1]?.value;
-    let numberAfterOperator = expression[indexs[i] + 1]?.value || 1;
+    let [numBeforeOperator, numAfterOperator] = getNumbersBetweenOperator(expression, indexs[i]);
 
-    if (indexs[i - 1] === indexs[i] - 2) {
-      numberBeforeOperator = results[i - 1].result;
+    const wasNumberBeforeOperatorCalculated = indexs[i - 1] === indexs[i] - 2;
+    if (wasNumberBeforeOperatorCalculated) {
+      numBeforeOperator = results[i - 1].result;
     }
 
-    if (numberAfterOperator === '-') {
-      numberAfterOperator = 1;
+    const isSingleMinusAfterOperator = numAfterOperator === '-';
+    if (isSingleMinusAfterOperator) {
+      numAfterOperator = 1;
     }
 
-    const currentOperator = expression[indexs[i]].value;
-
-    if (currentOperator === '/' && numberAfterOperator === '0') {
+    const operator = expression[indexs[i]].value;
+    if (operator === '/' && numAfterOperator === '0') {
       throw new Error(`Can't divide by 0`);
     }
 
-    const result = calculateOperation(numberBeforeOperator, numberAfterOperator, currentOperator);
-
+    const result = calculateOperation(numBeforeOperator, numAfterOperator, operator);
     results.push(parseResult(result, indexs[i]));
   }
 
-  return results;
+  return replaceCalculatedOperations(expression, results);
+
+  function getNumbersBetweenOperator(expression, operatorIndex) {
+    const x = expression[operatorIndex - 1]?.value;
+    const y = expression[operatorIndex + 1]?.value || 1;
+    return [x, y];
+  }
 
   function calculateOperation(x, y, operator) {
     const OPERATORS_FUNCTION = {
@@ -242,7 +242,7 @@ function replaceCalculatedOperations(expression, results) {
   return newExpression;
 }
 
-function calculateSumAndSubtraction(expression) {
+function calculateSumSubtraction(expression) {
   const OPERATORS_FUNCTION = {
     '+': OPERATIONS.sum,
     '-': OPERATIONS.subtract,
