@@ -115,10 +115,7 @@ function storageOperator(operator) {
     return;
   }
 
-  if (
-    expression.lastSymbol.type === 'number' &&
-    expression.lastSymbol.value === '-'
-  ) {
+  if (expression.lastSymbol.type === 'number' && expression.lastSymbol.value === '-') {
     return;
   }
 
@@ -194,11 +191,7 @@ function calculateMultAndDivision(expression) {
       throw new Error(`Can't divide by 0`);
     }
 
-    const result = calculateOperation(
-      numberBeforeOperator,
-      numberAfterOperator,
-      currentOperator
-    );
+    const result = calculateOperation(numberBeforeOperator, numberAfterOperator, currentOperator);
 
     results.push(parseResult(result, indexs[i]));
   }
@@ -225,11 +218,7 @@ function calculateMultAndDivision(expression) {
 function replaceCalculatedOperations(expression, results) {
   const newExpression = [];
 
-  for (
-    let expressionIndex = 0;
-    expressionIndex < expression.length;
-    expressionIndex++
-  ) {
+  for (let expressionIndex = 0; expressionIndex < expression.length; expressionIndex++) {
     let canPush = true;
 
     for (let resultsIndex = 0; resultsIndex < results.length; resultsIndex++) {
@@ -237,9 +226,7 @@ function replaceCalculatedOperations(expression, results) {
         results[resultsIndex].indexs[0] === expressionIndex &&
         results[resultsIndex].indexs[2] !== results[resultsIndex + 1]?.indexs[0]
       ) {
-        newExpression.push(
-          new MathSymbol(results[resultsIndex].result, 'number')
-        );
+        newExpression.push(new MathSymbol(results[resultsIndex].result, 'number'));
       }
 
       if (results[resultsIndex].indexs.includes(expressionIndex)) {
@@ -267,10 +254,7 @@ function calculateSumAndSubtraction(expression) {
     }
 
     const operator = arr[index - 1]?.value || '+';
-    return OPERATORS_FUNCTION[operator](
-      accumulator,
-      Number(currentValue.value)
-    );
+    return OPERATORS_FUNCTION[operator](accumulator, Number(currentValue.value));
   }, 0);
 
   if (result === Infinity || isNaN(result)) {
@@ -288,10 +272,7 @@ function deleteLastDigit() {
   }
 
   expression.lastSymbol.pop();
-  if (
-    expression.lastSymbol.isEmpty() ||
-    expression.lastSymbol.type === 'operator'
-  ) {
+  if (expression.lastSymbol.isEmpty() || expression.lastSymbol.type === 'operator') {
     expression.removeLastSymbol();
   }
 }

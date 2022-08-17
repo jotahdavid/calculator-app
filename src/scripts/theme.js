@@ -5,8 +5,7 @@ function storeAppTheme(themeIndex) {
 }
 
 function getAppThemeStored() {
-  const themeIndex =
-    Number(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))) ?? 1;
+  const themeIndex = Number(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY))) ?? 1;
 
   return isIndexBetweenSliderLimit(themeIndex) ? themeIndex : 1;
 
